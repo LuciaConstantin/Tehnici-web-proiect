@@ -69,7 +69,7 @@ INSERT into prajituri (nume,descriere,pret, gramaj, calorii, tip_produs, categor
 
 
 
-DROP TYPE IF EXISTS categ_prajitura;
+DROP TYPE IF EXISTS categ_prajitura; 
 DROP TYPE IF EXISTS tipuri_produse;
 
 CREATE TYPE categ_prajitura AS ENUM( 'comanda speciala', 'aniversara', 'editie limitata', 'pentru copii', 'dietetica','comuna');
@@ -128,3 +128,41 @@ aceasta și Ryke Meadows.', 'coperta-Addicted-_2_Fara-tine-3D.png', 'fictiune', 
 ('Love&Gelato. Vacanță la Florența', 'Bestseller New York Times O vacanță de vară în Italia devine un periplu de neuitat prin Toscana, în acest roman cu mult romance, mister și aventură.Oamenii vin în Italia pentru două lucruri: love și gelato, i-a spus cineva odată. Dar uneori au parte de mult mai mult.', 'coperta-1_LoveGelato.jpg', 'aventura', 'epica', 48.9, 352, '978-606-8754-15-4', '{"Jenna Evans Welch"}', True),
 ( 'Acasă, pe drum','Viața lor de-a lungul ultimilor ani, când au luat-o teleleu prin lume într-o rulotă de cinci metri pătrați, în care-au trăit, s-au iubit, au scris, au fotografiat și-au suferit împreună, ni se pare o fantastică ficțiune, când în realitate noi suntem cei fictivi.','teleleu.jpg', 'aventura', 'humanitas', 45, 388, '978-973-50-5889-0', '{"Elena Stancu", "Cosmin Bumbuț"}', False);
 /* de pus instructiunea in documentatie */
+
+
+DROP TYPE IF EXISTS edituri;
+DROP TYPE IF EXISTS tematici;
+
+CREATE TYPE edituri AS ENUM( 'humanitas', 'librex', 'epica', 'corint','booklet');
+CREATE TYPE tematici AS ENUM('fictiune', 'educational', 'aventura');
+
+CREATE TABLE IF NOT EXISTS carti (
+   id serial PRIMARY KEY,
+   nume VARCHAR(50) UNIQUE NOT NULL,
+   descriere TEXT,
+   imagine VARCHAR(300),
+   tematica tematici NOT NULL ,
+   editura edituri NOT NULL,
+   pret NUMERIC(8,2) NOT NULL,
+   nr_pagini NUMERIC(4) NOT NULL,
+   data_adaugare TIMESTAMP DEFAULT current_timestamp,
+   culoare VARCHAR (25) NOT NULL,
+   autori VARCHAR[],
+   semn_carte BOOLEAN NOT NULL DEFAULT FALSE
+
+);
+
+INSERT INTO carti(nume, descriere, imagine, tematica, editura, pret, nr_pagini, culoare, autori,semn_carte) VALUES
+('Cartea gastei', 'Un Saint-Rémy răscolit de război dă la iveală o prietenie remarcabilă între două tinere fete: Fabienne și Agnès, două jumătăți ale aceleiași portocale.', 'cartea-gastei.jpg', 'aventura', 'humanitas', 60, 328, 'albastru', '{"Yiyun Li"}', False),
+('Val și Cetatea Suﬂetelor', 'Ce talent grozav are Ana Alfianu! Pe de o parte, spune o poveste iniţiatică, în genul celor ale lui Michael Ende sau Peter Beagle, cu băieţei și ţestoase vorbitoare, cu pești care se hrănesc cu lacrimi, cu prelegeri policolore despre puterea cuvintelor, cum foarte rar s-au scris în literatura noastră.','val-cetatea.jpg', 'aventura', 'humanitas', 33, 112, 'crem', '{"Ana Alfianu"}', True),
+('Gargantua & Pantagruel', 'La urma urmei, Gargantua & Pantagruel e, într-o anume măsură, un fel de autobiografie nemărturisită, autobiografie în care amintiri din copilărie și din tinerețe sunt transfigurate, în alt fel decât la Creangă, și strecurate dibaci, sub pretextul fantasticului și-al fabulosului.', 'gargantua_si_pantagruel_01.jpg','fictiune', 'corint', 29, 
+368, 'crem', '{"Francois Rabelais"}', False),
+('TESTE CU DICHIS', 'Lucrarea este realizată în conformitate cu programa școlară în vigoare pentru clasa I, având o abordare atractivă și interdisciplinară.', 'teste-cu-dichis-clasa-i_ana-maria-canavoiu_editura-corint-educational-01.jpg', 'educational', 'corint', 52.5, 88, 'crem', '{"Ana-Maria Cănăvoiu", "Mihaela Cârja", "Felicia-Ramona Focht", "Elena Niculae", "Corina Daciana Oprițoiu", "Laura Piroș"}', False),
+('Micul print', 'Cartea este o pledoarie pentru iubire, pace, prietenie, comunicare intre lumea copiilor si cea a adultilor, relationare, incredere, o carte de interpretare a simbolurilor, a mesajelor, o carte despre frumusete si ocrotirea ei, o carte despre valorile omenirii.', 'micul.jpg', 'fictiune', 'librex', 38, 128, 'albastru', '{"Antoine de Saint-Exupery"}', True),
+('Fără tine', '. Petrecând mai mult timp cu sora ei mai mică, află
+despre ea lucruri nebănuite și intuiește că există o legătură neliniștitoare între
+aceasta și Ryke Meadows.', 'coperta-Addicted-_2_Fara-tine-3D.png', 'fictiune', 'epica', 52.9, 368, 'alb', '{"Krista Ritchie", "Becca Ritchie"}', True),
+('Fetele, minți sclipitoare', '25 de femei care au marcat lumea științelor', 'Fetele-minti-sclipitoare_coperta-3D-e1639130722760.png', 'educational', 'epica', 38.9, 120, 'alb', '{"Irene Civico", "Sergio Parra"}',False),
+('Caiet de lectură pentru clasa a IV-a', 'Tematica lecturilor include familia, universul copilului şi relaţiile cu cei din jur, lumea basmelor, istoria şi dragostea de ţară, natura, valorile umane, anotimpuri şi sărbători, jucăriile, călătorii şi aventuri, fiecare temă fiind abordată în două lecturi literare (poezie, fabulă, fragment de basm sau roman) sau non-literare.', 'caiet-de-lectura-cls-IV-jpg-webp-768x768.png', 'educational','booklet', 27.9, 112, 'verde', '{"Aura Motofeanu", "Mihaela Stăneci"}', False),
+('Love&Gelato. Vacanță la Florența', 'Bestseller New York Times O vacanță de vară în Italia devine un periplu de neuitat prin Toscana, în acest roman cu mult romance, mister și aventură.Oamenii vin în Italia pentru două lucruri: love și gelato, i-a spus cineva odată. Dar uneori au parte de mult mai mult.', 'coperta-1_LoveGelato.jpg', 'aventura', 'epica', 48.9, 352, 'crem', '{"Jenna Evans Welch"}', True),
+( 'Acasă, pe drum','Viața lor de-a lungul ultimilor ani, când au luat-o teleleu prin lume într-o rulotă de cinci metri pătrați, în care-au trăit, s-au iubit, au scris, au fotografiat și-au suferit împreună, ni se pare o fantastică ficțiune, când în realitate noi suntem cei fictivi.','teleleu.jpg', 'aventura', 'humanitas', 45, 388, 'verde', '{"Elena Stancu", "Cosmin Bumbuț"}', False);

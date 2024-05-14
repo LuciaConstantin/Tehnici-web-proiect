@@ -1,70 +1,160 @@
 <!DOCTYPE html>
 <html  lang="ro">
     <head>
-        <meta name="description" content="Cofetaria Dulcelind ofera prajituri, torturi, produse de patiserie cu optiunea de achizitie online si livrare prin curier.">
-        <meta name="keywords" content="cofetarie, Dulcelind, prajituri, torturi, dulce, pateuri, produse">
-        <link rel="stylesheet" href="/resurse/css/produse.css" type="text/css" />
-        <title>Cofetăria Dulcelind - home</title>
-        <%- include("../fragmente/head") %>     
+    
+        
+        <meta name="keywords"
+            content="carte, povesti, transport curier, bestseller, manual, dictionare, Romania, biografii, review, carte copii, carte dezvoltare personale">
+        <meta name="description"
+            content="Magazin de carti. Carti, dictionare, manuale. Carti pentru copii, adolescenti, Carti de dezvoltare personala, Carti bestseller. Livrare la domiciliu">
+        <script src="/node_modules/bootstrap/dist/js/bootstrap.j"></script>
         <script type="text/javascript" src=/resurse/js/produse.js></script>
+        <link rel="stylesheet" href="/resurse/css/produse.css" type="text/css" />
+        <link rel="stylesheet" href="/resurse/css/produse700.css" type="text/css" />
+        <%- include("../fragmente/head") %> 
+        <title>Produse magazin</title>  
 
     </head>
     <body>
-    <%- include("../fragmente/header") %>
+    <%- include("../fragmente/header.ejs") %>
 
     <main>
-        <label> Nume: <input type="text" id="inp-nume"></label>
-        <!--<label> Maxim calorii: <input type="number" id="inp-calorii" value="10000"></label>-->
-        <div> Calorii:<!-- trebuie sa aiba acelasi name ca sa formeze un grup -->
-            <p><label>Dietetic (calorii &lt; 350)
-                <input id="i_rad1"  name="gr_rad" value="0:350" type="radio"/>
-            </label></p>
-            <p><label>Mediu (350 &le; calorii &lt; 700)
-                <input id="i_rad2"  name="gr_rad" value="350:700" type="radio"/>
-            </label>
-            <p><label>Ridicat caloric (700 &le; calorii)
-                <input id="i_rad3" name="gr_rad" value="700:1000000000" type="radio"/>
-            </label>
-            <p><label>Toate
-                <input id="i_rad4" checked name="gr_rad" value="toate" type="radio"/>
-            </label>
+        <div class="row">
+            <div class="col-md-4">
+                <label> Nume: <input type="text" id="inp-nume"></label>
+            </div>
+            <div class="col-md-4">
+                <label class="inp-edituri">Edituri:</label>
+                <input list="inp-edituri" id="edituri" name="edituri">
+                <datalist id="inp-edituri">
+                    <option value="toate">Toate</option>
+                    <% for (let opt of locals.optiuniEdituri) { %>
+                        <option value="<%- opt.unnest %>"><%- opt.unnest %> </option>
+                    <% } %>
+                </datalist>
+            </div>
+
+            <div class="col-md-4">
+                <label>Select simplu:
+                    <select id="inp-categorie">
+                        <option id="sel-toate" selected value="toate">toate</option>
+                        <% for (let opt of locals.optiuni) { %>
+                            <option value="<%- opt.unnest %>"><%- opt.unnest %> </option>
+                        <% } %>
+                    </select>
+                </label>
+            </div>
         </div>
+        
 
+        <div class="form-floating">
+            <textarea class="form-control" id="inp-descriere"></textarea>
+            <label for="inp-descriere">Cauta in descriere</label>
+          </div>
+          
+        <div class="row">
+            <div class="col-md-6">
+                <p>
+                    <label>Culoare coperta</label>
+                </p>
+                <div class="btn-group" role="group">
+                    <p>
+                    <input type="radio" class="btn-check" name="gr_rad" id="i_rad_toate" value="toate" checked>
+                    <label class="btn btn-outline-primary" for="i_rad_toate">Toate</label>
+                
+                    <% locals.Culoare.forEach(function(culoare) { %>
+                        <input type="radio" class="btn-check" name="gr_rad" id="i_rad_<%- culoare.culoare %>" value="<%- culoare.culoare %>">
+                        <label class="btn btn-outline-primary" for="i_rad_<%- culoare.culoare %>"><%- culoare.culoare %></label>
+                    <% }); %>
+                </div>
+                
+                
+                
+            </div>
 
-        <label> Pret minim: <input type="range" id="inp-pret" value="0" min="0"  max="70"> <span id="infoRange">(0)</span></label>
-        <label>Select simplu:
-            <select id="inp-categorie">
-                <option id="sel-toate" selected value="toate">toate</option>
-                <% for (let opt of locals.optiuni) { %>
-                    <option value="<%- opt.unnest %>"><%- opt.unnest %> </option>
-                <% } %>
-            </select>
-        </label>
-        <p>
-        <button id="filtrare">Filtreaza</button> 
+            <div class="col-md-6">
+                <label for="inp-data">Selectați luna:</label>
+                <select id="inp-data" multiple>
+                    <option value="1" selected>Ianuarie</option>
+                    <option value="2" selected>Februarie</option>
+                    <option value="3" selected>Martie</option>
+                    <option value="4" selected>Aprilie</option>
+                    <option value="5" selected>Mai</option>
+                    <option value="6" selected>Iunie</option>
+                    <option value="7" selected>Iulie</option>
+                    <option value="8" selected>August</option>
+                    <option value="9" selected>Septembrie</option>
+                    <option value="10" selected>Octombrie</option>
+                    <option value="11" selected>Noiembrie</option>
+                    <option value="12" selected>Decembrie</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-7">
+            <label>
+                Afișează doar cu discount pe baza criteriului cartile cu mai puțin de 150 de pagini
+                <input type="checkbox" id="chk_discount" >
+            </label>      
+            </div> 
+            <div class="col-md-5">
+                <label> Pret : <%- locals.pretMin[0].min %> - <%- locals.pretMax[0].max %><input type="range" id="inp-pret" value="27.9" min="27.90"  max="60" class="form-range" > <span id="infoRange" class="ms-2"> (0)</span></label>
+                
+            </div>
+        </div>
+        
+        <br>
 
-        <button id="resetare">Reseteaza</button><br/>
-        <button id="sortCrescNume">Sorteaza crescator dupa pret si nume</button>
-        <button id="sortDescrescNume">Sorteaza descrescator dupa pret si nume</button>
+        <button type="button" class="btn" id="filtrare"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter-square-fill" viewBox="0 0 16 16">
+            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm.5 5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1 0-1M4 8.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m2 3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5"/>
+          </svg><label>Filtreaza</label></button> 
+        <button type="button" class="btn" id="resetare"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16">
+            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
+          </svg><label>Reseteaza</label></button><br/>
+        <button type="button" class="btn" id="sortCrescNume"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-down-alt" viewBox="0 0 16 16">
+            <path d="M3.5 3.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 12.293zm4 .5a.5.5 0 0 1 0-1h1a.5.5 0 0 1 0 1zm0 3a.5.5 0 0 1 0-1h3a.5.5 0 0 1 0 1zm0 3a.5.5 0 0 1 0-1h5a.5.5 0 0 1 0 1zM7 12.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5"/>
+          </svg><label>Sorteaza crescator dupa pret si nr. de autori</label></button>
+        <button type="button" class="btn" id="sortDescrescNume"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-down" viewBox="0 0 16 16">
+            <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
+          </svg><label>Sorteaza descrescator dupa pret si nr. de autori</label></button>
         
         </p>
+
+        
+          
         
         <p id="p-suma">Apăsați Alt+"c" pentru suma preturilor produselor afișate. </p>
+        <p id="nr_produse">Numarul de produse care respecta filtrele alese</p>
         <section id="produse">
             <h2>Produse</h2>
             <div class="grid-produse">
                 <% for( let prod of locals.produse) { %>
                     <article class="produs" >
                         <h3 class="nume">Nume: <a href="/produs/<%-prod.id %>" ><span class="val-nume"><%- prod.nume%></span></a></h3>
-                        <div class="info-prod">
-                            <p class="pret">Pret: <span class="val-pret"><%- prod.pret%></span></p>
-                            <p class="calorii">Calorii: <span class="val-calorii"><%- prod.calorii%></span></p>
-                            <p class="gramaj">Gramaj: <span class="val-gramaj"><%- prod.gramaj%></span></p>
+                        <div id="coloana1">
+                            <figure>
+                                <a href="/produs/<%-prod.id %>" ><img src="/resurse/imagini/produse/<%- prod.imagine %>" style="width:50%;height:auto;" alt="[imagine <%- prod.nume %>]" /></a>
+                            </figure>
+                            
+                            <div class="info-prod">
+                                <p class="tematica">Tematica: <span class="val-tematica"><%- prod.tematica%></span></p>
+                                <p class="pret">Pret: <span class="val-pret"><%- prod.pret%></span></p>
+                                <p class="editura">Editura: <span class="val-editura"><%- prod.editura%></span></p>
+                            </div>
                         </div>
-                        <p class="categorie">Categorie:<span class="val-categorie"><%- prod.categorie%></span></p>
-                        <figure>
-                            <a href="/produs/<%-prod.id %>" ><img src="/resurse/imagini/produse/<%- prod.imagine %>" style="width:50%;height:auto;" alt="[imagine <%- prod.nume %>]" /></a>
-                        </figure>
+                        <div id="coloana2">
+                            
+                            <details>
+                                <summary>Specificații</summary>
+                                <p class="caracteristica">Culoare coperta: <span id="val" class="culoare"><%- prod.culoare %> </span></p>
+                                <p class="caracteristica">Autori: <span id="val" class="autori"><%- prod.autori %> </span></p>
+                                <p class="caracteristica">Numar pagini: <span id="val" class="nr_pagini"><%- prod.nr_pagini %> </span></p>
+                                <p class="caracteristica">Data adăugare: <span id="val" class="data_adaugare"><%- prod.data_adaugare %></span></p>
+                                <p class="caracteristica">Semn de carte: <span id="val" class="semn_carte"><%- prod.semn_carte %> </span></p> 
+                            </details>
+                            <p class="descriere">Descriere: <span id="val-descriere" class="descriere"><%- prod.descriere %> </span></p> 
+                            
+                        </div>
                         <label class="selecteaza-cos">
                             Selectează:<br/>
                             <input type="checkbox" class="select-cos" value="<%-prod.id %>" autocomplete="off">
@@ -78,3 +168,5 @@
     <%- include("../fragmente/footer") %>
     </body>
 </html>
+
+

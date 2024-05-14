@@ -12,5 +12,29 @@
     $h2-font-size: 2rem,
     $font-family-base: "Montserrat",
     $border-width: 4px,
-    $border-color: #E4D4DD
-)
+    $border-color: #E4D4DD,
+    
+    $form-range-thumb-width: 1.5rem, 
+    $form-range-thumb-bg: #E44EA0, 
+    $form-range-track-bg: #F0C9DB 
+);
+
+
+$border-width: 2px; 
+$border-radius: 20px;
+$primary:  #E44EA0;
+$secondary: #F0C9DB;
+
+
+#filtrare, #resetare{
+    background-color: $primary;
+}
+#sortCrescNume, #sortDescrescNume {
+    background-color: $secondary;
+}
+.btn{
+    border: $border-width solid transparent;
+    border-radius: $border-radius;
+}
+
+

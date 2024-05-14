@@ -7,6 +7,15 @@ const ejs=require('ejs');
 
 const Client = require('pg').Client;
 
+const AccesBD= require("./module_proprii/accesbd.js");
+
+const formidable=require("formidable");
+const {Utilizator}=require("./module_proprii/utilizator.js")
+const session=require('express-session');
+const Drepturi = require("./module_proprii/drepturi.js");
+
+
+
 var client= new Client({database:"cti_2024",
         user:"lucia",
         password:"lucia",
@@ -18,14 +27,21 @@ client.query("select * from prajituri from unnest(enum_range(null::categ_prajitu
     console.log(rez);
 })
 
-client.query("select * from carti", function(err, rez){
+client.query("select * from carti from unnest (enum_range(null::tematici))", function(err, rez){
     console.log(rez);
 })
-
+  
 app= express();
 console.log("Folder proiect", __dirname);/*folderul in care e aplicatia*/
-console.log("Cale fisier", __filename);
+console.log("Cale fisier", __filename); 
 console.log("Director de lucru", process.cwd()); /*folderul de unde rulam aplicatia"*/
+
+app.use(session({ // aici se creeaza proprietatea session a requestului (pot folosi req.session)
+    secret: 'abcdefg',//folosit de express session pentru criptarea id-ului de sesiune
+    resave: true,
+    saveUninitialized: false
+  }));
+
 
 obGlobal ={
     obErori:null,
@@ -37,14 +53,57 @@ obGlobal ={
 
 
 
-app.set("view engine","ejs");
+app.set("view engine","ejs"); /*seteaza ejs ca motor de vizualizare implicit*/
 
-app.use("/resurse", express.static(__dirname+"/resurse"));
+app.use("/resurse", express.static(__dirname+"/resurse")); /*seteaza directorul ca fiind static*/
 app.use("/node_modules", express.static(__dirname+"/node_modules"));
+app.use("/poze_uploadate", express.static(__dirname+"/resurse"));
 
 /*app.get("/", function(req, res){
     res.sendFile(__dirname + "/index.html")
 })*/
+
+
+
+
+app.use(function(req, res, next){
+    client.query("select * from unnest(enum_range(null::tematici))", function(err, rezOptiuni){
+        res.locals.optiuniMeniu=rezOptiuni.rows
+        next()
+    })
+})
+
+app.use(function(req, res, next){
+    client.query("select * from unnest(enum_range(null::edituri))", function(err, rezOptiuni){
+        res.locals.optiuniEdituri=rezOptiuni.rows
+        next()
+    })
+})
+
+app.use(function(req, res, next){
+    client.query("select min(pret) from carti", function(err, rezOptiuni){
+        res.locals.pretMin = rezOptiuni.rows;
+        next()
+    })
+})
+
+app.use(function(req, res, next){
+    client.query("select max(pret) from carti", function(err, rezOptiuni){
+        res.locals.pretMax = rezOptiuni.rows;
+        next()
+    })
+})
+
+app.use(function(req, res, next){
+    client.query("select distinct(culoare) from carti", function(err, rezOptiuni){
+        res.locals.Culoare = rezOptiuni.rows;
+        next()
+    })
+})
+
+
+
+
 
 
 app.get(["/","/home","/index"], function(req, res){
@@ -57,6 +116,9 @@ app.get("/cerere", function(req, res){
 
 })
 
+
+
+
 ///trimiterea unui mesaj dinamic
 
 /*app.get("/data", function (req, res){
@@ -64,7 +126,7 @@ app.get("/cerere", function(req, res){
 })*/
 
 
-vect_foldere=["temp", "temp1", "backup"]
+vect_foldere=["temp", "temp1", "backup", "poze_uploadate"]
 for (let folder of vect_foldere){
     let caleFolder=path.join(__dirname, folder)
     if(!fs.existsSync(caleFolder)){
@@ -120,15 +182,16 @@ app.get("/despre", function(req, res){
 })
 
 
+
 app.get("/produse", function(req, res){
     console.log(req.query)
     var conditieQuery="";
     if (req.query.tip){
-        conditieQuery=` where tip_produs='${req.query.tip}'`
+        conditieQuery=` where tematica='${req.query.tip}'`
     }
-    client.query("select * from unnest(enum_range(null::categ_prajitura))", function(err, rezOptiuni){
+    client.query("select * from unnest(enum_range(null::tematici))", function(err, rezOptiuni){
 
-        client.query(`select * from prajituri ${conditieQuery}`, function(err, rez){
+        client.query(`select * from carti ${conditieQuery}`, function(err, rez){
             if (err){
                 console.log(err);
                 afisareEroare(res, 2);
@@ -141,7 +204,7 @@ app.get("/produse", function(req, res){
 })
 
 app.get("/produs/:id", function(req, res){
-    client.query(`select * from prajituri where id=${req.params.id}`, function(err, rez){
+    client.query(`select * from carti where id=${req.params.id}`, function(err, rez){
         if(err){
             console.log(err)
             afisareEroare(res, 2);
@@ -155,35 +218,98 @@ app.get("/produs/:id", function(req, res){
 
 
 
+////Utlizator
+app.post("/inregistrare",function(req, res){
+    var username;
+    var poza;
+    var formular= new formidable.IncomingForm()
+    formular.parse(req, function(err, campuriText, campuriFisier ){//4
+        console.log("Inregistrare:",campuriText);
 
 
+        console.log(campuriFisier);
+        console.log(poza, username);
+        var eroare="";
 
-app.get("/produse1", function(req, res){
-    client.query("select * from carti", function(err, rez){
-        if(err){
-            console.log(err)
-            afisareEroare(res, 2);
+        var utilizNou= new Utilizator()
+        // TO DO var utilizNou = creare utilizator
+        try{
+            utilizNou.setareNume=campuriText.nume;
+            utilizNou.setareUsername=campuriText.username;
+            utilizNou.email=campuriText.email
+            utilizNou.prenume=campuriText.prenume
+            
+            utilizNou.parola=campuriText.parola;
+            utilizNou.culoare_chat=campuriText.culoare_chat;
+            utilizNou.poza= poza;
+            Utilizator.getUtilizDupaUsername(campuriText.username, {}, function(u, parametru ,eroareUser ){
+                if (eroareUser==-1){//nu exista username-ul in BD
+                    //TO DO salveaza utilizator
+                    utilizNou.salvareUtilizator()
+                }
+                else{
+                    eroare+="Mai exista username-ul";
+                }
+
+
+                if(!eroare){
+                    res.render("pagini/inregistrare", {raspuns:"Inregistrare cu succes!"})
+                   
+                }
+                else
+                    res.render("pagini/inregistrare", {err: "Eroare: "+eroare});
+            })
+           
+
+
         }
-        else{
-            res.render("pagini/produse1", {produse: rez.rows, optiuni: []})
-    }
-    })
-    
-})
-app.get("/produs1/:id", function(req, res){
-    client.query(`select * from carti where id=${req.params.id}`, function(err, rez){
-        if(err){
-            console.log(err)
-            afisareEroare(res, 2);
+        catch(e){
+            console.log(e);
+            eroare+= "Eroare site; reveniti mai tarziu";
+            console.log(eroare);
+            res.render("pagini/inregistrare", {err: "Eroare: "+eroare})
         }
-        else{
-        res.render("pagini/produs1", {prod: rez.rows[0]})
-    }
+   
+
+
+
+
+
+
+    });
+    formular.on("field", function(nume,val){  // 1
+   
+        console.log(`--- ${nume}=${val}`);
+       
+        if(nume=="username")
+            username=val;
     })
-    
-})
+    formular.on("fileBegin", function(nume,fisier){ //2
+        console.log("fileBegin");
+       
+        console.log(nume,fisier);
+        //TO DO adaugam folderul poze_uploadate ca static si sa fie creat de aplicatie
+        //TO DO in folderul poze_uploadate facem folder cu numele utilizatorului (variabila folderUser)
+
+        var folderUser= path.join(__dirname, "poze_uploadate", username);
+        if(!fs.existsSync(folderUser))
+            fs.mkdir(folderUser);
+       
+        fisier.filepath=path.join(folderUser, fisier.originalFilename)
+        poza=fisier.originalFilename;
+        //fisier.filepath=folderUser+"/"+fisier.originalFilename
+        console.log("fileBegin:",poza)
+        console.log("fileBegin, fisier:",fisier)
 
 
+    })    
+    formular.on("file", function(nume,fisier){//3
+        console.log("file");
+        console.log(nume,fisier);
+    });
+});
+
+///-utiliz
 
 
 app.get("/*", function(req, res){
@@ -198,8 +324,12 @@ app.get("/*", function(req, res){
                         afisareEroare(res,404);
                         console.log("Nu a gasit pagina: ", req.url)
                     }
-                    
                 }
+                else {
+                    res.send(rezHtml);
+                }
+                    
+                
 
             
         });         

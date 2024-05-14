@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html  lang="ro">
     <head>
-    
-        
-        <meta name="keywords"
-            content="carte, povesti, transport curier, bestseller, manual, dictionare, Romania, biografii, review, carte copii, carte dezvoltare personale">
-        <meta name="description"
-            content="Magazin de carti. Carti, dictionare, manuale. Carti pentru copii, adolescenti, Carti de dezvoltare personala, Carti bestseller. Livrare la domiciliu">
-        <script type="text/javascript" src=/resurse/js/produse.js></script>
+        <meta name="description" content="Cofetaria Dulcelind ofera prajituri, torturi, produse de patiserie cu optiunea de achizitie online si livrare prin curier.">
+        <meta name="keywords" content="cofetarie, Dulcelind, prajituri, torturi, dulce, pateuri, produse">
         <link rel="stylesheet" href="/resurse/css/produse.css" type="text/css" />
-        <%- include("../fragmente/head") %> 
-        <title>Produse magazin</title>  
+        <title>Cofetăria Dulcelind - home</title>
+        <%- include("../fragmente/head") %>     
+        <script type="text/javascript" src=/resurse/js/produse.js></script>
 
     </head>
     <body>
@@ -24,7 +20,7 @@
                 <input id="i_rad1"  name="gr_rad" value="0:350" type="radio"/>
             </label></p>
             <p><label>Mediu (350 &le; calorii &lt; 700)
-                <input id="i_rad2"  name="gr_rad" value="350:750" type="radio"/>
+                <input id="i_rad2"  name="gr_rad" value="350:700" type="radio"/>
             </label>
             <p><label>Ridicat caloric (700 &le; calorii)
                 <input id="i_rad3" name="gr_rad" value="700:1000000000" type="radio"/>
@@ -59,15 +55,15 @@
             <div class="grid-produse">
                 <% for( let prod of locals.produse) { %>
                     <article class="produs" >
-                        <h3 class="nume">Nume: <a href="/produs1/<%-prod.id %>" ><span class="val-nume"><%- prod.nume%></span></a></h3>
+                        <h3 class="nume">Nume: <a href="/produs/<%-prod.id %>" ><span class="val-nume"><%- prod.nume%></span></a></h3>
                         <div class="info-prod">
                             <p class="pret">Pret: <span class="val-pret"><%- prod.pret%></span></p>
-                            <p class="autori">Autori: <span class="val-autori"><%- prod.autori%></span></p>
-                            <p class="editura">Editura: <span class="val-editura"><%- prod.editura%></span></p>
+                            <p class="calorii">Calorii: <span class="val-calorii"><%- prod.calorii%></span></p>
+                            <p class="gramaj">Gramaj: <span class="val-gramaj"><%- prod.gramaj%></span></p>
                         </div>
-                        <p class="Tematica">Tematicae:<span class="val-tematica"><%- prod.tematica%></span></p>
+                        <p class="categorie">Categorie:<span class="val-categorie"><%- prod.categorie%></span></p>
                         <figure>
-                            <a href="/produs1/<%-prod.id %>" ><img src="/resurse/imagini/produse1/<%- prod.imagine %>" style="width:50%;height:auto;" alt="[imagine <%- prod.nume %>]" /></a>
+                            <a href="/produs/<%-prod.id %>" ><img src="/resurse/imagini/produse/<%- prod.imagine %>" style="width:50%;height:auto;" alt="[imagine <%- prod.nume %>]" /></a>
                         </figure>
                         <label class="selecteaza-cos">
                             Selectează:<br/>

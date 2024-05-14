@@ -1,7 +1,7 @@
 #grid-pagina
 {
     display: grid;
-    gap: 15 px;
+    gap: 15px;
     grid-gap:10px;
     grid-template-columns: repeat(4, 1fr);
     grid-template-areas:"welcome welcome welcome welcome"
@@ -9,7 +9,7 @@
                         "orar orar anunturi anunturi"
                         "lista-utilizatori utilizator-statistici utilizator-statistici site-server"
                         "promotii promotii promotii promotii";
-
+     
                         
 }
 html{
@@ -72,7 +72,7 @@ html{
     display: flex;
     justify-content: center;
 }
-.harta{
+.harta{ 
     width: 600px;
     max-width: 100%;
     min-width: 50%;
@@ -89,13 +89,7 @@ html{
     position: relative; 
 }
 
-#program-evenimente {
-    position: absolute;
-    bottom: -18px; 
-    /*font-style: bold;*/
-    color: var(--culoare9); 
-    font-size: 10px; 
-}
+
 
 
 
@@ -111,7 +105,7 @@ html{
                             "lista-utilizatori utilizator-statistici "
                             "site-server site-server"
                             "promotii promotii";
-    
+        
     } 
     
     html{
@@ -133,6 +127,10 @@ html{
     .video-vtt{
         width: 80%;
         height: auto;
+    }
+    body{
+        padding-left: var(--dim-spatiere-ecran-mediu);
+        padding-right: var(--dim-spatiere-ecran-mediu);
     }
     
 }
@@ -168,6 +166,10 @@ html{
         overflow-x: auto;
         overflow-y: hidden;
         white-space: nowrap;
+    }
+    body{
+        padding-left: var(500px);
+        padding-right: var(500px);
     }
     
 }

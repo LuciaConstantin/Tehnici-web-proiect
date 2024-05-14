@@ -22,8 +22,10 @@
         <div id="grid-pagina">
             <section id="welcome">
             <h2>Bine ati venit</h2>
+            <%- locals.optiuniMeniu[0].unnest %>
+            <%- locals.optiuniMeniu[1].unnest %>
             <p>Ip: <%- locals.ip %></p>
-            <button type="button" class="btn btn-primary btn-lg">Stil-1-mare</button>
+            
             <%- include("../fragmente/galerie.ejs") %> 
             <hr>
             <p>Lectura este unul dintre cele mai frumoase placeri ale vietii. <b>Magazinul Cartisoara</b> contine o
@@ -41,7 +43,7 @@
                 <figcaption id="titlu-imagine">Carti</figcaption>
             </figure>
         </section>
-        <section id="orar" class="col-md-6 col-lg-12">
+        <section id="orar">
             <div class="scroll">
             <table id="tab-orar">
                 <thead>
@@ -110,7 +112,7 @@
             
         </section>
 
-        <section id="calendar-evenimente" class="bg-primary">
+        <section id="calendar-evenimente" >
             <h2 >Calendar evenimente</h2>
                 <p class="col">In hendrerit gravida rutrum quisque non tellus orci ac. Sollicitudin nibh sit amet commodo nulla facilisi nullam vehicula. Fermentum dui faucibus in ornare quam viverra orci sagittis. At tellus at urna condimentum mattis pellentesque id nibh. Ullamcorper morbi tincidunt ornare massa eget egestas purus viverra accumsan. Suspendisse in est ante in nibh mauris cursus mattis. Facilisis leo vel fringilla est ullamcorper eget nulla facilisi etiam. Est sit amet facilisis magna etiam. Enim nec dui nunc mattis enim. Condimentum vitae sapien pellentesque habitant morbi tristique senectus et netus. Ut eu sem integer vitae. Laoreet id donec ultrices tincidunt arcu non. Amet commodo nulla facilisi nullam vehicula ipsum. Mattis rhoncus urna neque viverra justo nec ultrices. Ut diam quam nulla porttitor massa id neque.</p>
         </section>
