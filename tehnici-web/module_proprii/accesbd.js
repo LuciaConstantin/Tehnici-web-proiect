@@ -118,6 +118,13 @@ class AccesBD{
         */
         this.client.query(comanda,parametriQuery, callback)
     }
+
+    /**
+     * Selecteaza async inregistrari din baza de date
+     *
+     * @param {ObiectQuerySelect} obj - un obiect cu datele pentru query
+     * @returns {Promise<Object|null>}- returneaza rezultatul interogarii sau null
+     */
     async selectAsync({tabel="",campuri=[],conditiiAnd=[]} = {}){
         let conditieWhere="";
         if(conditiiAnd.length>0)
@@ -135,6 +142,16 @@ class AccesBD{
             return null;
         }
     }
+
+
+    /**
+     * Introduce o noua inregistrare in baza de date
+     *
+     * @param {ObiectQuerySelect} obj - un obiect cu datele pentru query
+     * @param {function} callback - o functie callback cu 2 parametri: eroare si rezultatul queryului
+     * 
+     */
+
     insert({tabel="",campuri={}} = {}, callback){
                 /*
         campuri={
@@ -171,6 +188,13 @@ class AccesBD{
     //     this.client.query(comanda,callback)
     // }
 
+    /**
+     * Actualizeaza o inregistrare din baza de date
+     *
+     * @param {ObiectQuerySelect} obj - un obiect cu datele pentru query
+     * @param {function} callback - o functie callback cu 2 parametri: eroare si rezultatul queryului
+     * 
+     */
     update({tabel="",campuri={}, conditiiAnd=[]} = {}, callback, parametriQuery){
         let campuriActualizate=[];
         for(let prop in campuri)
@@ -183,6 +207,13 @@ class AccesBD{
         this.client.query(comanda,callback)
     }
 
+    /**
+     * Realizeaza un update parametrizat in baza de date
+     *
+     * @param {ObiectQuerySelect} obj - un obiect cu datele pentru query
+     * @param {function} callback - o functie callback cu 2 parametri: eroare si rezultatul queryului
+     * 
+     */
     updateParametrizat({tabel="",campuri=[],valori=[], conditiiAnd=[]} = {}, callback, parametriQuery){
         if(campuri.length!=valori.length)
             throw new Error("Numarul de campuri difera de nr de valori")
@@ -210,6 +241,14 @@ class AccesBD{
     //     this.client.query(comanda,valori, callback)
     // }
 
+
+    /**
+     * Sterge o inregistrare din baza de date
+     *
+     * @param {ObiectQuerySelect} obj - un obiect cu datele pentru query
+     * @param {function} callback - o functie callback cu 2 parametri: eroare si rezultatul queryului
+     * 
+     */
     delete({tabel="",conditiiAnd=[]} = {}, callback){
         let conditieWhere="";
         if(conditiiAnd.length>0)

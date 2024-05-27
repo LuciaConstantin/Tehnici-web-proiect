@@ -22,10 +22,16 @@
         <div id="grid-pagina">
             <section id="welcome">
             <h2>Bine ati venit</h2>
+            <%- include("../fragmente/formular-login.ejs")%> 
+
             <%- locals.optiuniMeniu[0].unnest %>
             <%- locals.optiuniMeniu[1].unnest %>
             <p>Ip: <%- locals.ip %></p>
             
+           
+            <div id="ultimul_produs"></div>
+            
+
             <%- include("../fragmente/galerie.ejs") %> 
             <hr>
             <p>Lectura este unul dintre cele mai frumoase placeri ale vietii. <b>Magazinul Cartisoara</b> contine o
@@ -127,9 +133,7 @@
         </section>
         <section id="lista-utilizatori">
             <h2>Lista utilizatori online</h2>
-                <p>
-                    Purus in mollis nunc sed id. Mus mauris vitae ultricies leo integer malesuada nunc vel risus. Convallis posuere morbi leo urna molestie at. Et netus et malesuada fames ac. Quam quisque id diam vel quam elementum pulvinar etiam. Erat nam at lectus urna duis convallis convallis tellus. Vestibulum lorem sed risus ultricies. Imperdiet proin fermentum leo vel. Egestas erat imperdiet sed euismod nisi porta lorem mollis. Tellus mauris a diam maecenas sed enim ut sem. Bibendum enim facilisis gravida neque convallis a cras semper. Posuere sollicitudin aliquam ultrices sagittis. Eu scelerisque felis imperdiet proin fermentum leo. Condimentum vitae sapien pellentesque habitant morbi tristique. Ac tincidunt vitae semper quis lectus nulla at volutpat diam.
-                </p>
+                <%- include("../fragmente/useri-online.ejs") %>
         </section>
 
         <section id="utilizator-statistici" >

@@ -9,6 +9,10 @@ nav{
     display: none;
 }
 
-#watermark,#banner{
+/*#watermark,#banner{
+    display:none;
+} */
+
+#watermark{
     display:none;
 }

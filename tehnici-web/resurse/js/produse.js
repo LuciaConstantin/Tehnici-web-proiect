@@ -17,7 +17,7 @@ window.addEventListener("load", function() {
 
     // Atașăm evenimentul onchange pentru fiecare input și select
     inpNume.onchange = filtrare;
-    inpPret.onchange = filtrare;
+    inpPret.oninput = filtrare;
     inpCategorie.onchange = filtrare;
     inpEdituri.onchange = filtrare;
     for (let radio of radioCuloare) {
@@ -359,3 +359,16 @@ window.addEventListener("load", function() {
 })
 
 
+/*function loadData(data) {
+    const zileSapt = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
+    const luni = ['Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie', 'Iulie', 'August', 'Septembrie', 'Octombrie', 'Noiembrie', 'Decembrie'];
+
+    var ziSapt = zileSapt[data.getDay()];
+    var zi = data.getDate();
+    var luna = luni[data.getMonth()];
+    var an = data.getFullYear();
+
+    return `${ziSapt}, ${zi}-${luna}-${an}`;
+}
+
+*/

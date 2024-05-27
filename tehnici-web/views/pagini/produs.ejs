@@ -26,7 +26,7 @@
                     <p>Tematica: <span class="tematica"><%- locals.prod.tematica %> </span></p>
                     <p>Editura: <span class="editura"><%- locals.prod.editura %> </span></p>
                     <p>Numar pagini: <span class="nr_pagini"><%- locals.prod.nr_pagini %> </span></p>
-                    <p>ISBN: <span class="isbn"><%- locals.prod.isbn %> </span></p>
+                    <p>Culoare coperta: <span class="isbn"><%- locals.prod.culoare %> </span></p>
                     <p>Data adăugare: <span class="categorie"><%- locals.prod.data_adaugare %> </span></p>
                     <p>Semn de carte: <span class="semn_carte"><%- locals.prod.semn_carte %> </span></p> 
                     <figure class="imag-produs">
@@ -35,8 +35,16 @@
                 </article>
             
         </section>
+        <script src="/resurse/js/cookies.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const idProdus = "<%- locals.prod.id %>";
+                setCookieProdus("ultimul_produs_accesat", idProdus , 960000); 
+            });
+        </script>
     </main>
-
+    
+    
     <%- include("../fragmente/footer") %>
     </body>
 </html>

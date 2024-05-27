@@ -7,7 +7,11 @@ for(let interval of v_intervale){
 }
 
 console.log(sirAlphaNum);
-
+/**
+ * Genereaza un token de o anumita lungime
+ * @param {number} lungimea tokenului 
+ * @returns {string} returneaza tokenul
+ */
 function genereazaToken(n){
     let token=""
     for (let i=0;i<n; i++){

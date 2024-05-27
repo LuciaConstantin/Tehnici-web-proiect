@@ -142,13 +142,14 @@ main{
 }
 
 
-main a:visited{
+main a :visited{
     color: var(--culoare9);
 }
 
 footer a, .mail, .telefon, .descarcabil:visited{
     color: var(--culoare4);
 }
+
 
 a[href^="http"]::before {
     content: "⮳";
@@ -173,21 +174,24 @@ footer a:active{
 }
 
 
+.taburi-iframe a::before {
+    content:  none !important; 
+}
 
-.link{
+main a{
     background-image: radial-gradient( var(--culoare6) 40%, transparent 80%);
     background-size: 0;
     background-position: center;
     transition:all 0.7s linear;
 }
 
-.link:hover {
+main a:hover {
     background-repeat: no-repeat;
     background-size: 100%;
     transition-delay: 0s;
 }
 
-.link:not(:hover) {
+main a:not(:hover) {
     background-repeat: no-repeat;
     background-size: 0; 
 }
@@ -209,3 +213,29 @@ footer a:not(:hover) {
     background-repeat: no-repeat;
     background-size: 0; 
 }
+
+
+.container-iframe .taburi-iframe a[target="ifr-video"] {
+    transition: none; /* Exclude tranzitia de pe linkurile care au target-ul ifr-video */
+}
+
+
+
+/*.link{
+    background-image: radial-gradient( var(--culoare6) 40%, transparent 80%);
+    background-size: 0;
+    background-position: center;
+    transition:all 0.7s linear;
+}
+
+.link:hover {
+    background-repeat: no-repeat;
+    background-size: 100%;
+    transition-delay: 0s;
+}
+
+.link:not(:hover) {
+    background-repeat: no-repeat;
+    background-size: 0; 
+}
+*/

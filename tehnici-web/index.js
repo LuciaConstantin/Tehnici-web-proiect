@@ -14,6 +14,8 @@ const {Utilizator}=require("./module_proprii/utilizator.js")
 const session=require('express-session');
 const Drepturi = require("./module_proprii/drepturi.js");
 
+const QRCode= require('qrcode');
+const puppeteer=require('puppeteer');
 
 
 var client= new Client({database:"cti_2024",
@@ -48,8 +50,13 @@ obGlobal ={
     obImagini:null,
     folderScss: path.join(__dirname, "resurse/scss"),
     folderCss: path.join(__dirname,"resurse/css"),
-    folderBackup: path.join(__dirname,"backup")
+    folderBackup: path.join(__dirname,"backup"),
+    protocol:"http://",
+    numeDomeniu:"localhost:8080",
 }
+
+
+
 
 
 
@@ -59,9 +66,106 @@ app.use("/resurse", express.static(__dirname+"/resurse")); /*seteaza directorul 
 app.use("/node_modules", express.static(__dirname+"/node_modules"));
 app.use("/poze_uploadate", express.static(__dirname+"/resurse"));
 
+
+// --------------------------utilizatori online ------------------------------------------
+
+
+function getIp(req){//pentru Heroku/Render
+    var ip = req.headers["x-forwarded-for"];//ip-ul userului pentru care este forwardat mesajul
+    if (ip){
+        let vect=ip.split(",");
+        return vect[vect.length-1];
+    }
+    else if (req.ip){
+        return req.ip;
+    }
+    else{
+     return req.connection.remoteAddress;
+    }
+}
+
+
+app.all("/*",function(req,res,next){
+    let ipReq=getIp(req);
+    if (ipReq){ 
+        var id_utiliz=req?.session?.utilizator?.id;
+        id_utiliz=id_utiliz?id_utiliz:null;
+        //console.log("id_utiliz", id_utiliz);
+        // TO DO comanda insert (folosind AccesBD) cu  ip, user_id, pagina(url  din request)
+        var obiectCerere;
+        if(id_utiliz){
+            obiectCerere={
+                ip: ipReq,
+                user_id:id_utiliz,
+                pagina: req.url
+            }
+        }
+        else{
+            obiectCerere={
+                ip: ipReq,
+                pagina: req.url
+            }
+        }
+        AccesBD.getInstanta().insert({
+            tabel:"accesari",
+            campuri:obiectCerere
+        }, function(err, rez){
+            if (err){
+                console.log(err)
+            }
+        })
+    }
+    next(); 
+});
+
+
+
+function stergeAccesariVechi(){
+    AccesBD.getInstanta().delete({
+        tabel:"accesari",
+        conditiiAnd:["now() - data_accesare >= interval '10 minutes' "]}, 
+        function(err, rez){
+            console.log(err);
+        })
+}
+stergeAccesariVechi();
+setInterval(stergeAccesariVechi, 10*60*1000);
+
+
+async function obtineUtilizatoriOnline(){
+    try{
+        var rez = await client.query("select username, nume, prenume from utilizatori where id in (select distinct user_id from accesari where now()-data_accesare <= interval '5 minutes')");
+            console.log(rez.rows);
+            return rez.rows
+        } catch (err) {
+            console.error(err);
+            return []
+        }
+}
+
 /*app.get("/", function(req, res){
     res.sendFile(__dirname + "/index.html")
 })*/
+
+
+client.query("select * from unnest(enum_range(null::tematici))", function(err, rezCategorie){
+    if (err){
+        console.log(err);
+    }
+    else{
+        obGlobal.optiuniMeniu=rezCategorie.rows;
+    }
+});
+
+app.use("/*",function(req, res, next){
+    res.locals.optiuniMeniu=obGlobal.optiuniMeniu;
+    res.locals.Drepturi=Drepturi;
+    if (req.session.utilizator){
+        req.utilizator=res.locals.utilizator=new Utilizator(req.session.utilizator);
+    }    
+    next();
+}) 
+
 
 
 
@@ -72,6 +176,13 @@ app.use(function(req, res, next){
         next()
     })
 })
+
+
+
+
+
+
+
 
 app.use(function(req, res, next){
     client.query("select * from unnest(enum_range(null::edituri))", function(err, rezOptiuni){
@@ -106,8 +217,12 @@ app.use(function(req, res, next){
 
 
 
-app.get(["/","/home","/index"], function(req, res){
-    res.render("pagini/index", {ip: req.ip, imagini:obGlobal.obImagini.imagini});
+
+
+
+
+app.get(["/","/home","/index"], async function(req, res){
+    res.render("pagini/index", {ip: req.ip, imagini:obGlobal.obImagini.imagini, useriOnline:await obtineUtilizatoriOnline()});
 })
 
 ///trimiterea unui mesaj fix
@@ -218,6 +333,107 @@ app.get("/produs/:id", function(req, res){
 
 
 
+
+
+// ---------------------------------  cos virtual --------------------------------------
+
+
+///de la client
+app.use(["/produse_cos","/cumpara"],express.json({limit:'2mb'}));//obligatoriu de setat pt request body de tip json
+
+
+
+app.post("/produse_cos",function(req, res){
+    console.log(req.body);
+    if(req.body.ids_prod.length!=0){
+        //TO DO : cerere catre AccesBD astfel incat query-ul sa fie `select nume, descriere, pret, gramaj, imagine from prajituri where id in (lista de id-uri)`
+        AccesBD.getInstanta().select({tabel:"carti", campuri:"nume,descriere,pret,nr_pagini,imagine".split(","),conditiiAnd:[`id in (${req.body.ids_prod})`]},
+        function(err, rez){
+            if(err)
+                res.send([]);
+            else
+                res.send(rez.rows); 
+        });
+}
+    else{
+        res.send([]);
+    }
+ 
+});
+
+
+cale_qr=__dirname+"/resurse/imagini/qrcode";
+if (fs.existsSync(cale_qr))
+  fs.rmSync(cale_qr, {force:true, recursive:true});
+fs.mkdirSync(cale_qr);
+client.query("select id from carti", function(err, rez){
+    for(let prod of rez.rows){
+        let cale_prod=obGlobal.protocol+obGlobal.numeDomeniu+"/produs/"+prod.id;
+        //console.log(cale_prod);
+        QRCode.toFile(cale_qr+"/"+prod.id+".png",cale_prod);
+    }
+});
+
+
+
+
+async function genereazaPdf(stringHTML,numeFis, callback) {
+    const chrome = await puppeteer.launch();
+    const document = await chrome.newPage();
+    console.log("inainte load")
+    //await document.setContent(stringHTML, {waitUntil:"load"});
+    await document.setContent(stringHTML, {waitUntil:"load"});
+    
+    console.log("dupa load")
+    await document.pdf({path: numeFis, format: 'A4'});
+    
+    console.log("dupa pdf")
+    await chrome.close();
+    
+    console.log("dupa inchidere")
+    if(callback)
+        callback(numeFis);
+}
+
+app.post("/cumpara",function(req, res){
+    console.log(req.body);
+
+    if (req?.utilizator?.areDreptul?.(Drepturi.cumparareProduse)){
+        AccesBD.getInstanta().select({
+            tabel:"carti",
+            campuri:["*"],
+            conditiiAnd:[`id in (${req.body.ids_prod})`]
+        }, function(err, rez){
+            if(!err  && rez.rowCount>0){
+                console.log("produse:", rez.rows);
+                let rezFactura= ejs.render(fs.readFileSync("./views/pagini/factura.ejs").toString("utf-8"),{
+                    protocol: obGlobal.protocol, 
+                    domeniu: obGlobal.numeDomeniu,
+                    utilizator: req.session.utilizator,
+                    produse: rez.rows
+                });
+                console.log(rezFactura);
+                let numeFis=`./temp/factura${(new Date()).getTime()}.pdf`;
+                genereazaPdf(rezFactura, numeFis, function (numeFis){
+                    mesajText=`Stimate ${req.session.utilizator.username} aveti mai jos factura.`;
+                    mesajHTML=`<h2>Stimate ${req.session.utilizator.username},</h2> aveti mai jos factura.`;
+                    req.utilizator.trimiteMail("Factura", mesajText,mesajHTML,[{
+                        filename:"factura.pdf",
+                        content: fs.readFileSync(numeFis)
+                    }] );
+                    res.send("Totul e bine!");
+                });
+                
+            }
+        })
+    }
+    else{
+        res.send("Nu puteti cumpara daca nu sunteti logat sau nu aveti dreptul!");
+    }
+    
+});
+
+
 ////Utlizator
 app.post("/inregistrare",function(req, res){
     var username;
@@ -234,15 +450,15 @@ app.post("/inregistrare",function(req, res){
         var utilizNou= new Utilizator()
         // TO DO var utilizNou = creare utilizator
         try{
-            utilizNou.setareNume=campuriText.nume;
-            utilizNou.setareUsername=campuriText.username;
-            utilizNou.email=campuriText.email
-            utilizNou.prenume=campuriText.prenume
+            utilizNou.setareNume=campuriText.nume[0];
+            utilizNou.setareUsername=campuriText.username[0];
+            utilizNou.email=campuriText.email[0]
+            utilizNou.prenume=campuriText.prenume[0]
             
-            utilizNou.parola=campuriText.parola;
-            utilizNou.culoare_chat=campuriText.culoare_chat;
+            utilizNou.parola=campuriText.parola[0];
+            utilizNou.culoare_chat=campuriText.culoare_chat[0];
             utilizNou.poza= poza;
-            Utilizator.getUtilizDupaUsername(campuriText.username, {}, function(u, parametru ,eroareUser ){
+            Utilizator.getUtilizDupaUsername(campuriText.username[0], {}, function(u, parametru ,eroareUser ){
                 if (eroareUser==-1){//nu exista username-ul in BD
                     //TO DO salveaza utilizator
                     utilizNou.salvareUtilizator()
@@ -269,11 +485,6 @@ app.post("/inregistrare",function(req, res){
             console.log(eroare);
             res.render("pagini/inregistrare", {err: "Eroare: "+eroare})
         }
-   
-
-
-
-
 
 
     });
@@ -293,7 +504,7 @@ app.post("/inregistrare",function(req, res){
 
         var folderUser= path.join(__dirname, "poze_uploadate", username);
         if(!fs.existsSync(folderUser))
-            fs.mkdir(folderUser);
+            fs.mkdirSync(folderUser);
        
         fisier.filepath=path.join(folderUser, fisier.originalFilename)
         poza=fisier.originalFilename;
@@ -308,6 +519,205 @@ app.post("/inregistrare",function(req, res){
         console.log(nume,fisier);
     });
 });
+
+
+app.post("/login",function(req, res){
+    /*TO DO parametriCallback: cu proprietatile: request(req), response(res) si parola
+        testam daca parola trimisa e cea din baza de date
+        testam daca a confirmat mailul
+    */
+    var username;
+    console.log("ceva");
+    var formular= new formidable.IncomingForm()
+    
+    
+    formular.parse(req, function(err, campuriText, campuriFisier ){
+        var parametriCallback= {
+            req:req,
+            res:res,
+            parola:campuriText.parola[0]
+        }
+        Utilizator.getUtilizDupaUsername (campuriText.username[0],parametriCallback, function(u, obparam, eroare){
+            let parolaCriptata=Utilizator.criptareParola(obparam.parola)
+            if(u.parola== parolaCriptata  && u.confirmat_mail){
+                u.poza=u.poza?path.join("poze_uploadate",u.username, u.poza):"";
+                obparam.req.session.utilizator=u;               
+                obparam.req.session.mesajLogin="Bravo! Te-ai logat!";
+                obparam.res.redirect("/index"); //req url catre pagina curenta
+                
+            }
+            else{
+                console.log("Eroare logare")
+                obparam.req.session.mesajLogin="Date logare incorecte sau nu a fost confirmat mailul!";
+                obparam.res.redirect("/index");
+            }
+        })
+    });
+    
+});
+
+app.get("/logout", function(req, res){
+    req.session.destroy();
+    res.locals.utilizator=null;
+    res.render("pagini/logout");
+});
+
+app.post("/profil", function(req, res){
+    console.log("profil");
+    if (!req.session.utilizator){
+        afisareEroare(res,403,)
+        //res.render("pagini/eroare_generala",{text:"Nu sunteti logat."});
+        return;
+    }
+    var formular= new formidable.IncomingForm();
+ 
+    formular.parse(req,function(err, campuriText, campuriFile){
+       
+        var parolaCriptata=Utilizator.criptareParola(campuriText.parola[0]);
+ 
+        AccesBD.getInstanta().updateParametrizat(
+            {tabel:"utilizatori",
+            campuri:["nume","prenume","email","culoare_chat"],
+            valori:[
+                `${campuriText.nume[0]}`,
+                `${campuriText.prenume[0]}`,
+                `${campuriText.email[0]}`,
+                `${campuriText.culoare_chat[0]}`],
+            conditiiAnd:[
+                `parola='${parolaCriptata}'`,
+                `username='${campuriText.username[0]}'`
+            ]
+        },          
+        function(err, rez){
+            if(err){
+                console.log(err);
+                afisareEroare(res,2);
+                return;
+            }
+            console.log(rez.rowCount);
+            if (rez.rowCount==0){
+                res.render("pagini/profil",{mesaj:"Update-ul nu s-a realizat. Verificati parola introdusa."});
+                return;
+            }
+            else{     
+                ///trebuie si pentru imagini       
+                //actualizare sesiune
+                console.log("ceva");
+                req.session.utilizator.nume= campuriText.nume[0];
+                req.session.utilizator.prenume= campuriText.prenume[0];
+                req.session.utilizator.email= campuriText.email[0];
+                req.session.utilizator.culoare_chat= campuriText.culoare_chat[0];
+                res.locals.utilizator=req.session.utilizator;
+            }
+ 
+ 
+            res.render("pagini/profil",{mesaj:"Update-ul s-a realizat cu succes."});
+ 
+        });
+       
+ 
+    });
+});
+
+
+///utiliz-admin
+
+app.get("/useri", function(req, res){
+    /* TO DO
+    * in if testam daca utilizatorul din sesiune are dreptul sa vizualizeze utilizatori
+    * completam obiectComanda cu parametrii comenzii select pentru a prelua toti utilizatorii
+    */
+    if(req?.utilizator?.areDreptul(Drepturi.vizualizareUtilizatori)){
+        var obiectComanda= {
+            tabel:"utilizatori",
+            campuri: ["*"],
+            conditiiAnd:[]
+        };
+        AccesBD.getInstanta().select(obiectComanda, function(err, rezQuery){
+            console.log(err);
+            res.render("pagini/useri", {useri: rezQuery.rows});
+        });
+        
+    }
+    else{
+        afisareEroare(res, 403);
+    }
+    
+});
+
+
+
+
+app.post("/sterge_utiliz", function(req, res){
+    /* TO DO
+    * in if testam daca utilizatorul din sesiune are dreptul sa stearga utilizatori
+    * completam obiectComanda cu parametrii comenzii select pentru a prelua toti utilizatorii
+    */
+    if(req?.utilizator?.areDreptul(Drepturi.stergereUtilizatori)){
+        var formular= new formidable.IncomingForm();
+ 
+        formular.parse(req,function(err, campuriText, campuriFile){
+                var obiectComanda= {
+                    tabel:"utilizatori",
+                    conditiiAnd: [`id=${campuriText.id_utiliz[0]}`]
+
+                }
+                AccesBD.getInstanta().delete(obiectComanda, function(err, rezQuery){
+                console.log(err);
+                res.redirect("/useri");
+            });
+        });
+    }else{
+        afisareEroare(res,403);
+    }
+    
+})
+
+
+
+
+
+
+//http://${Utilizator.numeDomeniu}/cod/${utiliz.username}/${token}
+app.get("/cod/:username/:token",function(req,res){
+    /*TO DO parametriCallback: cu proprietatile: request (req) si token (luat din parametrii cererii)
+        setat parametriCerere pentru a verifica daca tokenul corespunde userului
+    */
+    console.log(req.params);
+    
+    try {
+        var parametriCallback={
+            //proprietate: val variabila
+            req:req, 
+            token: req.params.token
+
+        }
+        Utilizator.getUtilizDupaUsername(req.params.username,parametriCallback ,function(u,obparam){
+            let parametriCerere={
+                tabel:"utilizatori",
+                campuri:{"confirmat_mail": true},
+                conditiiAnd:[`id=${u.id}`]
+            };
+            AccesBD.getInstanta().update(
+                parametriCerere, 
+                function (err, rezUpdate){
+                    if(err || rezUpdate.rowCount==0){
+                        console.log("Cod:", err);
+                        afisareEroare(res,3);
+                    }
+                    else{
+                        res.render("pagini/confirmare.ejs");
+                    }
+                })
+        })
+    }
+    catch (e){
+        console.log(e);
+        afisareEroare(res,2);
+    }
+})
+
+
 
 ///-utiliz
 
@@ -346,6 +756,19 @@ app.get("/*", function(req, res){
     }
 
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

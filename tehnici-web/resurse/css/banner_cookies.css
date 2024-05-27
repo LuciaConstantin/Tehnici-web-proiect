@@ -1,0 +1,57 @@
+#banner {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    width: 25vw; 
+    height: 25vw; 
+    background-color: var(--culoare6); 
+    opacity: 0;
+    animation: bannerAnimation 5s forwards; 
+    z-index: 9999; 
+    color: var(--culoare-text-selectat);
+}
+
+
+
+#ok_cookies {
+    background-color: var(--culoare9); 
+    color: var(--culoare-text-selectat);
+    cursor: pointer;
+}
+
+#ok_cookies:hover {
+    background-color: var(--culoare4); 
+}
+
+@media (max-width: 1200px) {
+    #banner {
+        transform: none;
+        visibility: visible; /* Devine vizibil */
+        animation: none; /* Fără animație */
+        position: fixed;
+        bottom: 0px;
+        left: 0px;
+        width: 25vw; 
+        height: 25vw; 
+        background-color: var(--culoare6); 
+        opacity: 0.75;
+        z-index: 9999; 
+        color: var(--culoare-text-selectat);
+    }
+}
+
+
+
+@keyframes bannerAnimation {
+     0% {
+        opacity: 0;
+        transform: scale(0);
+        }
+    100% {
+        opacity: 0.75;
+        transform: scale(1);
+        }
+    }
+
+
+

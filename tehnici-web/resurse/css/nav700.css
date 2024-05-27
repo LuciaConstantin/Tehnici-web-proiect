@@ -1,6 +1,9 @@
 /*facem vizibil iconul de hamburger meniu*/
 
-#watermark,#banner{
+/*#watermark,#banner{
+    display:none;
+}*/
+#watermark{
     display:none;
 }
 #hamburger{
